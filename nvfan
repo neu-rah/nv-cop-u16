@@ -28,11 +28,11 @@
 #
 # be sure to revert to original settings when the problem is solved (/etc/X11/xorg.conf backup)
 
-MAX=85
+MAX=80
 TOP=75
 AUTO=70
-MINPWM=40
-WATCH="5s"
+MINPWM=30
+WATCH="1s"
 
 function finish {
 	echo -e "\n\e[32m\e[1mExit -> setting PWM to auto\e[0m"
@@ -52,11 +52,11 @@ function watchnv {
 
 	if [[ $TEMP > $TOP ]];
 	then
-		NEWPWM=$(($PWM+5))
-		if [[ $NEWPWM > 100 ]];
-		then
-			NEWPWM=100
-		fi
+		NEWPWM=$((PWM+5))
+		#if [[ $NEWPWM > 100 ]];
+		#then
+		#	NEWPWM=100
+		#fi
 		if [[ $TEMP > $MAX ]];
 		then
 			echo -e "\e[1m\e[31m$TEMPº\e[0m  "
