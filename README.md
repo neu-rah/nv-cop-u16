@@ -5,7 +5,7 @@ monitor NVidia GPU temperature and set fan speed to avoid overheating
 (guess nvidia wants to kill my old GPU :D with last driver update)
 
 
-**the problem:** nvidia doing crazy this as flicks, monitor detect fail, screen resolutions change and crashes
+**the problem:** nvidia doing crazy things as flicks, monitor detect fail, screen resolutions change and crashes
 all due to overheating while fan sits on 30% ~ 40%, sometimes on 30& when over 90º
 
 using ubuntu 16.04 and nvidia 304.171 on my G71GL [Quadro FX 1500]
