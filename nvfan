@@ -31,6 +31,7 @@
 MAX=85
 TOP=75
 AUTO=70
+MINPWM=40
 WATCH="2s"
 
 function finish {
@@ -74,9 +75,9 @@ function watchnv {
 			nvidia-settings -a "[gpu:0]/GPUFanControlState=0" &>/dev/null
 		else
 			NEWPWM=$((PWM-1))
-			if [[ $NEWPWM < 30 ]];
+			if [[ $NEWPWM < $MINPWM ]];
 			then
-				NEWPWM=30
+				NEWPWM=$MINPWM
 			fi
 			echo "Its cool -> setting PWM to $NEWPWM%          "
 			nvidia-settings -a "[gpu:0]/GPUFanControlState=1" -a "[fan:0]/GPUTargetFanSpeed=$NEWPWM" &>/dev/null
