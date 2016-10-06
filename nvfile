@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# monitor NVidia GPU temperature and set fan speed to avoid overheating
+# (guess nvidia wants to kill my old GPU :D with last driver update)
+#
+#
+# problem: nvidia doing crazy this as flicks, monitor detect fail, screen resolutions change and crashes
+# all due to overheating while fan sits on 30% ~ 40%, sometimes on 30& when over 90º
+#
+# using ubuntu 16.04 and nvidia 304.171 on my G71GL [Quadro FX 1500]
+#
+# this is a simple script to solve my specific problem until ubuntu/nvidia solve it.
+# i'm sharing it as is, fell free to adapt, use at you own risk.
+#
+# Rui Azevedo (ruihfazevedo@gmail.com)
+#
+# settings:
+# MAX - play alarm sound (dont know if it works because i've never reached it)
+# TOP - start increasing fan pwm by 5% (and repeat) while over this value
+# AUTO - revert to driver control when droping below this point
+# WATCH - monitor timer tick
+#
+# features: revert to driver control when leaving the script
+#
+# notes: to allow this kind of control i had to set coolbits to 4
+#
+#     sudo nvidia-xconfig --cool-bits=4
+#
+# be sure to revert to original settings when the problem is solved (/etc/X11/xorg.conf backup)
+
+MAX=90
+TOP=80
+AUTO=78
+WATCH="5s"
+
+function finish {
+	echo -e "\n\e[32m\e[1mExit -> setting PWM to auto\e[0m"
+	nvidia-settings -a "[gpu:0]/GPUFanControlState=0" 2>/dev/null
+}
+
+trap finish EXIT
+
+function watchnv {
+	#get nvidia fan speed
+	PWM=$(nvidia-settings -q [fan:0]/GPUTargetFanSpeed -t 2>/dev/null)
+	#get gpu temp
+	TEMP=$(nvidia-settings -q [GPU:0]/GPUCoreTemp -t 2>/dev/null)
+	
+	echo -e "\e[HFan PWM: \e[1m$PWM%\e[0m  "
+	echo -n "GPU Temp: "
+
+	if [[ $TEMP > $TOP ]];
+	then
+		NEWPWM=$((PWM+5))
+		if [[ $NEWTEMP > 100 ]];
+		then
+			NEWTEMP=100
+		fi
+		if [[ $TEMP > $MAX ]];
+		then
+			echo -e "\e[1m\e[31m$TEMPº\e[0m  "
+			paplay /usr/share/sounds/freedesktop/stereo/suspend-error.oga
+			#beep -f 1000 -l 200 -n -f 2000 -l 200 -n -f 1500 -l 200
+		else
+			echo -e "\e[1m\e[33m$TEMPº\e[0m  "
+		fi
+		echo "Its Hot -> setting PWM to $NEWPWM  "
+		nvidia-settings -a "[gpu:0]/GPUFanControlState=1" -a "[fan:0]/GPUTargetFanSpeed=$NEWPWM" &>/dev/null
+	else
+		echo -e "\e[1m\e[32m$TEMPº\e[0m  "
+		if [[ $TEMP < $AUTO ]];
+		then
+			echo -e "\e[34mCold -> setting PWM to auto\e[0m             "
+			nvidia-settings -a "[gpu:0]/GPUFanControlState=0" &>/dev/null
+		else
+			NEWPWM=$((PWM-1))
+			if [[ $NEWPWM < 30 ]];
+			then
+				NEWPWM=30
+			fi
+			echo "Its cool -> setting PWM to $NEWPWM%          "
+			nvidia-settings -a "[gpu:0]/GPUFanControlState=1" -a "[fan:0]/GPUTargetFanSpeed=$NEWPWM" &>/dev/null
+		fi
+	fi
+}
+
+clear
+while [ 0 ]
+do
+	watchnv
+	sleep $WATCH
+done
