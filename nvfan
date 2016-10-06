@@ -32,7 +32,7 @@ MAX=85
 TOP=75
 AUTO=70
 MINPWM=40
-WATCH="2s"
+WATCH="5s"
 
 function finish {
 	echo -e "\n\e[32m\e[1mExit -> setting PWM to auto\e[0m"
@@ -52,7 +52,7 @@ function watchnv {
 
 	if [[ $TEMP > $TOP ]];
 	then
-		NEWPWM=$((PWM+5))
+		NEWPWM=$(($PWM+5))
 		if [[ $NEWPWM > 100 ]];
 		then
 			NEWPWM=100
